@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">SDQ</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_responsavel">Pais ou Responsáveis</string>
+    <string name="title_activity_professor">Professores</string>
+    <string name="title_activity_aluno">Alunos</string>
+    <string name="title_activity_resultados">Resultados</string>
+    <string name="tipo_do_questionario">SELECIONE O TIPO DO QUESTIONÁRIO</string>
+    <string name="selecione_questionario">SELECIONE O QUESTIONÁRIO</string>
+
+    <string-array name="tipo_quest_array">
+        <item>ALUNOS</item>
+        <item>PROFESSORES</item>
+        <item>PAIS/RESPONSÁVEIS</item>
+    </string-array>
+
+</resources>

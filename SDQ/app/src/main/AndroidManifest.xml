@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.developer.barbosa.sdq">
+
+    <application
+        android:name=".configuration.Configuracao"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".telas.MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".telas.ResponsavelActivity"
+            android:label="@string/title_activity_responsavel"
+            android:parentActivityName=".telas.MainActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <activity
+            android:name=".telas.ProfessorActivity"
+            android:label="@string/title_activity_professor"
+            android:parentActivityName=".telas.MainActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".telas.AlunoActivity"
+            android:label="@string/title_activity_aluno"
+            android:parentActivityName=".telas.MainActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".telas.ResultadosActivity"
+            android:label="@string/title_activity_resultados"
+            android:parentActivityName=".telas.MainActivity" />
+    </application>
+
+</manifest>

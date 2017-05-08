@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorSiren">#65303E</color>
+    <color name="colorHippiePink">#9F4958</color>
+    <color name="colorDarkCoral">#CF5E48</color>
+    <color name="colorBouquet">#AA8693</color>
+    <color name="colorPaleGoldenrod">#F4ECB0</color>
+    <color name="colorFloralWhite">#FEFBEF</color>
+
+</resources>
