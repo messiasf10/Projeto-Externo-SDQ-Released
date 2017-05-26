@@ -264,7 +264,9 @@ public class ResultadosActivity extends AppCompatActivity {
 
             // PERCORRER TODAS AS RESPOSTAS DOS QUESTIONARIOS DOS PROFESSORES
             for (int linha = 1, colunaExcel = 0; linha <= questionariosProfessor.size(); linha++) {
-                plan1.setColumnView(colunaExcel, 25);
+                // plan1.setColumnView(colunaExcel, 25);
+
+                colunaExcel = 0;
 
                 Questionario q = questionariosProfessor.get(linha - 1);
 
@@ -288,7 +290,7 @@ public class ResultadosActivity extends AppCompatActivity {
                         plan1.addCell(label2);
 
                         // COLOCOU AQUI POR QUE PULOU UMA COLUNA
-                        plan1.setColumnView(colunaExcel, 25);
+                        // plan1.setColumnView(colunaExcel, 25);
 
                         WritableCell cell2 = plan1.getWritableCell(colunaExcel, linha);
                         cell2.setCellFormat(cellFormat2);
