@@ -24,16 +24,16 @@
         android:layout_alignParentStart="true" />
 
     <EditText
-        android:inputType="textPersonName"
-        android:ems="10"
+        android:id="@+id/arQ1"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
         android:layout_marginLeft="34dp"
         android:layout_marginStart="34dp"
-        android:id="@+id/arQ1"
-        android:layout_height="50dp"
-        android:layout_width="250dp"
-        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/aQ1"
         android:layout_toRightOf="@+id/aQ1"
-        android:layout_toEndOf="@+id/aQ1" />
+        android:ems="10"
+        android:inputType="textCapCharacters|textCapSentences" />
 
     <TextView
         android:text="Data de Nascimento"
@@ -1479,7 +1479,7 @@
                 android:id="@+id/arQ34"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPersonName" />
+                android:inputType="textCapCharacters|textCapSentences" />
 
             <TextView
                 android:id="@+id/aQ35"

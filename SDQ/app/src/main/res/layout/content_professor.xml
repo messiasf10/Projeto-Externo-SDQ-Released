@@ -65,17 +65,17 @@
         android:layout_toEndOf="@+id/pQ2" />
 
     <EditText
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:layout_marginLeft="20dp"
-        android:layout_marginStart="20dp"
         android:id="@+id/prQ1"
-        android:layout_height="50dp"
         android:layout_width="250dp"
+        android:layout_height="50dp"
         android:layout_alignBaseline="@+id/pQ1"
         android:layout_alignBottom="@+id/pQ1"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_toEndOf="@+id/pQ1"
         android:layout_toRightOf="@+id/pQ1"
-        android:layout_toEndOf="@+id/pQ1" />
+        android:ems="10"
+        android:inputType="text|textCapWords|textCapSentences" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -1354,11 +1354,12 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="50dp"
                 android:id="@+id/pQ34"/>
+
             <EditText
+                android:id="@+id/prQ34"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/prQ34"
-                android:inputType="textPersonName"/>
+                android:inputType="text|textCapWords|textCapSentences" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

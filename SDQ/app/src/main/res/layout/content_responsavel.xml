@@ -24,16 +24,16 @@
         android:layout_alignParentStart="true" />
 
     <EditText
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:layout_marginLeft="17dp"
-        android:layout_marginStart="17dp"
         android:id="@+id/rQ1"
+        android:layout_width="250dp"
         android:layout_height="50dp"
         android:layout_alignBottom="@+id/rQ2"
-        android:layout_toRightOf="@+id/Q1"
+        android:layout_marginLeft="17dp"
+        android:layout_marginStart="17dp"
         android:layout_toEndOf="@+id/Q1"
-        android:layout_width="250dp" />
+        android:layout_toRightOf="@+id/Q1"
+        android:ems="10"
+        android:inputType="textCapCharacters|textCapSentences" />
 
     <TextView
         android:text="Data de Nascimento"
@@ -1435,11 +1435,12 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="50dp"
                 android:id="@+id/Q34"/>
+
             <EditText
+                android:id="@+id/rQ34"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/rQ34"
-                android:inputType="textPersonName"/>
+                android:inputType="textCapCharacters|textCapSentences" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -1453,11 +1454,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/Q36"/>
+
             <EditText
+                android:id="@+id/rQ36"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/rQ36"
-                android:inputType="textPersonName"/>
+                android:inputType="textCapCharacters|textCapWords|textCapSentences" />
 
             <Button
                 android:layout_width="match_parent"
