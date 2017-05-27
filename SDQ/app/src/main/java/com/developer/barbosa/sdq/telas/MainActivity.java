@@ -2,10 +2,13 @@ package com.developer.barbosa.sdq.telas;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,8 +17,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.developer.barbosa.sdq.R;
+import com.developer.barbosa.sdq.enums.TipoQuestionario;
 import com.developer.barbosa.sdq.model.QuestaoResposta;
 import com.developer.barbosa.sdq.model.Questionario;
 import com.developer.barbosa.sdq.model.SubQuestoes;
@@ -23,9 +28,11 @@ import com.developer.barbosa.sdq.model.SubQuestoes;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmList;
+import io.realm.RealmQuery;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        /*implements NavigationView.OnNavigationItemSelectedListener*/ {
 
     private Context context = this;
 
@@ -36,13 +43,16 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        getSupportActionBar().hide();
+        ActionBar bar = getSupportActionBar();
+        bar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#763b5c")));
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        // getSupportActionBar().hide();
+
+        /*DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        toggle.syncState();*/
 
         /*NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);*/
@@ -84,7 +94,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    @Override
+    /*@Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -92,7 +102,7 @@ public class MainActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -109,36 +119,18 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Realm realm = Realm.getDefaultInstance();
-            realm.beginTransaction();
+        if (id == R.id.action_sobre_app) {
 
-            List<Questionario> questionarios = realm.where(Questionario.class).findAll();
+            Intent intent = new Intent(MainActivity.this, SobreAplicativoActivity.class);
+            startActivity(intent);
 
-            for (Questionario q : questionarios){
-                System.out.println(q.toString());
-                for(QuestaoResposta qr : q.getQuestaoRespostas()){
-                    System.out.println("Questao: " + qr.getQuestao() + " / Resposta: " + qr.getResposta());
-                }
-            }
-
-            List<QuestaoResposta> qr = realm.where(QuestaoResposta.class).findAll();
-
-            System.out.println("Número de Questões e Respostas No Banco: " + qr.size());
-
-            List<SubQuestoes> sq = realm.where(SubQuestoes.class).findAll();
-
-            System.out.println("Número de Sub Questões No Banco: " + sq.size());
-
-            realm.commitTransaction();
-            realm.close();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+    /*@SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -161,5 +153,5 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
+    }*/
 }
