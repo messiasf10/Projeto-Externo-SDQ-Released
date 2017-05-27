@@ -166,8 +166,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_weight="1"
-                android:onClick="exportarExcell"
-                android:text="Exportar Resultados para Excell" />
+                android:onClick="exportarExcel"
+                android:text="GERAR PLANILHA COMPLETA NO EXCEL" />
 
         </LinearLayout>
 

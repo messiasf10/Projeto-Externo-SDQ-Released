@@ -1,9 +1,11 @@
 package com.developer.barbosa.sdq.telas;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,7 +18,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.developer.barbosa.sdq.R;
+import com.developer.barbosa.sdq.enums.QuestoesAlunos;
 import com.developer.barbosa.sdq.enums.QuestoesProfessores;
+import com.developer.barbosa.sdq.enums.QuestoesResponsavel;
 import com.developer.barbosa.sdq.enums.TipoQuestionario;
 import com.developer.barbosa.sdq.model.QuestaoResposta;
 import com.developer.barbosa.sdq.model.Questionario;
@@ -24,8 +28,6 @@ import com.developer.barbosa.sdq.model.ResultadosDAO;
 
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Environment;
@@ -44,8 +46,6 @@ import jxl.write.WritableCellFormat;
 import jxl.write.WritableFont;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 
 public class ResultadosActivity extends AppCompatActivity {
 
@@ -55,8 +55,9 @@ public class ResultadosActivity extends AppCompatActivity {
     private TextView txtRespNumFalso, txtRespNumMMV, txtRespNumVerdadeiro;
     private Button btnVisualizarQuestionario;
 
-    //variavel Botao de exportar Excell
     private Button btnExportarExcell;
+
+    private ProgressDialog dialog;
 
 
     @Override
@@ -150,123 +151,166 @@ public class ResultadosActivity extends AppCompatActivity {
         }
     }
 
+    public void exportarExcel(View view) {
+        ExportarExcelAsync exportarExcelAsync = new ExportarExcelAsync();
+        exportarExcelAsync.execute();
+    }
 
-    public void exportarExcell(View view) {
+    private class ExportarExcelAsync extends AsyncTask<Void, Void, Void> {
 
+        @Override
+        protected void onPreExecute() {
+            dialog = ProgressDialog.show(ResultadosActivity.this, "Por favor, aguarde", "Gerando planilha do excel ...");
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            gerarDadosNaPlanilhaDoExcel();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Toast.makeText(ResultadosActivity.this, "Planilha gerada com sucesso!", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        }
+
+    }
+
+    private void gerarDadosNaPlanilhaDoExcel(){
         try {
 
-            File file = new File(
-                    Environment.getExternalStorageDirectory(), "SDQ.xls");
+            File file = new File(Environment.getExternalStorageDirectory(), "PLANILHA_QUESTIONARIOS_SDQ.xls");
 
-            WritableWorkbook wb = null;
+            WritableWorkbook writableWorkbook = null;
 
-            wb = Workbook.createWorkbook(file);
+            writableWorkbook = Workbook.createWorkbook(file);
 
+            // CRIANDO ABAS DAS PLANILHAS
+            writableWorkbook.createSheet("PROFESSORES", 0);
+            writableWorkbook.createSheet("ALUNOS", 1);
+            writableWorkbook.createSheet("PAIS OU RESPONSÁVEIS", 2);
 
-            //Cria aba da planilha
-            wb.createSheet("Professor", 0);
+            // PEGANDO PLANILHAS PARA ESCREVER
+            WritableSheet writableSheetPlanProfessor = writableWorkbook.getSheet(0);
+            WritableSheet writableSheetPlanAluno = writableWorkbook.getSheet(1);
+            WritableSheet writableSheetPlanPaisResponsavel = writableWorkbook.getSheet(2);
 
-            //Testando criar nova aba
-            wb.createSheet("Aluno", 1);
+            // FORMATACAO DAS CELULAS DO CABECALHO
+            WritableCellFormat writableCellFormatHeader = new WritableCellFormat();
 
-            //Testando criar nova aba
-            wb.createSheet("Pais ou Responsáveis", 2);
+            // COR DE FUNDO DAS CELULAS DO CABECALHO
+            Colour colorHeaders = Colour.GRAY_80;
 
-            WritableSheet plan1 = wb.getSheet(0);
+            // COR E TIPO DE FONTE CABECALHO
+            WritableFont fonteHeader = new WritableFont(WritableFont.ARIAL);
+            fonteHeader.setBoldStyle(WritableFont.BOLD);
+            fonteHeader.setColour(Colour.WHITE);
 
-            WritableSheet plan2 = wb.getSheet(1);
-            WritableSheet plan3 = wb.getSheet(2);
+            writableCellFormatHeader.setBackground(colorHeaders);
+            writableCellFormatHeader.setFont(fonteHeader);
+            writableCellFormatHeader.setWrap(true);
+            writableCellFormatHeader.setAlignment(Alignment.CENTRE);
+            writableCellFormatHeader.setVerticalAlignment(VerticalAlignment.CENTRE);
+            writableCellFormatHeader.setBorder(Border.ALL, BorderLineStyle.THIN);
 
-            // Cor de fundo das celular
-            Colour bckcolor = Colour.GRAY_50;
-            WritableCellFormat cellFormat = new WritableCellFormat();
-            cellFormat.setBackground(bckcolor);
+            // FORMATACAO DAS CELULAS DO CORPO DA TABELA
+            WritableCellFormat writableCellFormatBody = new WritableCellFormat();
 
-            // Cor e tipo de fonte
-            WritableFont fonte = new WritableFont(WritableFont.ARIAL);
-            fonte.setColour(Colour.BLACK);
-            cellFormat.setFont(fonte);
+            // COR DE FUNDO DAS CELULAS DO CORPO
+            Colour colorBody = Colour.GRAY_25;
 
-            cellFormat.setWrap(true);
-            cellFormat.setAlignment(Alignment.CENTRE);
-            cellFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
-            cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+            // COR E TIPO DE FONTE DO CORPO
+            WritableFont fonteBody = new WritableFont(WritableFont.ARIAL);
+            fonteBody.setColour(Colour.BLACK);
 
-            // Cor de fundo das celular
-            Colour bckcolor2 = Colour.GRAY_25;
-            WritableCellFormat cellFormat2 = new WritableCellFormat();
-            cellFormat2.setBackground(bckcolor2);
+            writableCellFormatBody.setBackground(colorBody);
+            writableCellFormatBody.setFont(fonteBody);
+            writableCellFormatBody.setWrap(true);
+            writableCellFormatBody.setAlignment(Alignment.CENTRE);
+            writableCellFormatBody.setVerticalAlignment(VerticalAlignment.CENTRE);
+            writableCellFormatBody.setBorder(Border.ALL, BorderLineStyle.THIN);
 
-            cellFormat2.setFont(fonte);
-
-            cellFormat2.setWrap(true);
-            cellFormat2.setAlignment(Alignment.CENTRE);
-            cellFormat2.setVerticalAlignment(VerticalAlignment.CENTRE);
-            cellFormat2.setBorder(Border.ALL, BorderLineStyle.THIN);
-
+            // INICIANDO A LEITURA DOS DADOS
             Realm realm = Realm.getDefaultInstance();
 
             realm.beginTransaction();
 
-            RealmQuery<Questionario> questionarioRealmQuery = realm.where(Questionario.class).equalTo("tipo", TipoQuestionario.PROFESSORES.getTipo());
+            // -------------------- QUESTIONARIOS DOS PROFESSORES ------------------------------
+
+            // Pegando todos os questionários do tipo Professor
+            RealmQuery<Questionario> questionarioRealmQuery = realm
+                    .where(Questionario.class)
+                    .equalTo("tipo", TipoQuestionario.PROFESSORES.getTipo());
             List<Questionario> questionariosProfessor = questionarioRealmQuery.findAll();
 
             QuestoesProfessores[] questoesProfessores = QuestoesProfessores.values();
 
             // PERCORRENDO VETOR COM TODAS AS QUESTOES DO PROFESSOR
-            for (int colunaVetor = 0, colunaExcel = 0; colunaVetor < questoesProfessores.length; colunaVetor++) {
-                plan1.setColumnView(colunaExcel, 25);
+            for (int colunaVetor = 0, colunaExcel = 1; colunaVetor < questoesProfessores.length; colunaVetor++) {
 
-                Label label1;
-                Label label2;
-                if (questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.Q32.getTexto())) {
-                    label1 = new Label(colunaExcel, 0, questoesProfessores[colunaVetor].getTexto() + "(" + QuestoesProfessores.Q32sub1.getTexto() + ")");
-                    plan1.addCell(label1);
+                // Setando a largura das colunas
+                writableSheetPlanProfessor.setColumnView(colunaExcel, 25);
 
-                    WritableCell cell = plan1.getWritableCell(colunaExcel, 0);
-                    cell.setCellFormat(cellFormat);
+                Label label0;
+                if (questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.Q34.getTexto())) {
+                    label0 = new Label(0, 0, questoesProfessores[colunaVetor].getTexto());
+                    writableSheetPlanProfessor.addCell(label0);
 
-                    colunaExcel = colunaExcel + 1;
+                    WritableCell writableCell0 = writableSheetPlanProfessor.getWritableCell(0, 0);
+                    writableCell0.setCellFormat(writableCellFormatHeader);
 
-                    label2 = new Label(colunaExcel, 0, questoesProfessores[colunaVetor].getTexto() + "(" + QuestoesProfessores.Q32sub2.getTexto() + ")");
-                    plan1.addCell(label2);
-
-                    // COLOCOU AQUI, POR QUE PULOU UM COLUNA
-                    plan1.setColumnView(colunaExcel, 25);
-
-                    WritableCell cell2 = plan1.getWritableCell(colunaExcel, 0);
-                    cell2.setCellFormat(cellFormat);
-
-                    colunaExcel++;
+                    // Setando a largura das colunas
+                    writableSheetPlanProfessor.setColumnView(0, 25);
                 } else {
 
-                    if (questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.QComentario.getTexto())) {
-                        // COLUNA DO EXCEL NAO AVANÇA
+                    Label label1;
+                    Label label2;
+                    if (questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.Q32.getTexto())) {
+                        label1 = new Label(colunaExcel, 0, questoesProfessores[colunaVetor].getTexto() + "(" + QuestoesProfessores.Q32sub1.getTexto() + ")");
+                        writableSheetPlanProfessor.addCell(label1);
+
+                        WritableCell writableCell = writableSheetPlanProfessor.getWritableCell(colunaExcel, 0);
+                        writableCell.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel = colunaExcel + 1;
+
+                        label2 = new Label(colunaExcel, 0, questoesProfessores[colunaVetor].getTexto() + "(" + QuestoesProfessores.Q32sub2.getTexto() + ")");
+                        writableSheetPlanProfessor.addCell(label2);
+
+                        // COLOCOU AQUI, POR QUE PULOU UM COLUNA
+                        writableSheetPlanProfessor.setColumnView(colunaExcel, 25);
+
+                        WritableCell cell2 = writableSheetPlanProfessor.getWritableCell(colunaExcel, 0);
+                        cell2.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel++;
                     } else {
 
-                        if (questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.Q32sub1.getTexto()) ||
-                                questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.Q32sub2.getTexto())) {
-                            // COLUNA DO EXCEL NAO AVANÇA
-                        } else {
-                            label1 = new Label(colunaExcel, 0, questoesProfessores[colunaVetor].getTexto());
-                            plan1.addCell(label1);
+                        if (!questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.QComentario.getTexto()) &&
+                                !questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.Q32sub1.getTexto()) &&
+                                !questoesProfessores[colunaVetor].getTexto().equals(QuestoesProfessores.Q32sub2.getTexto())) {
 
-                            WritableCell cell3 = plan1.getWritableCell(colunaExcel, 0);
-                            cell3.setCellFormat(cellFormat);
+                            label1 = new Label(colunaExcel, 0, questoesProfessores[colunaVetor].getTexto());
+                            writableSheetPlanProfessor.addCell(label1);
+
+                            WritableCell cell3 = writableSheetPlanProfessor.getWritableCell(colunaExcel, 0);
+                            cell3.setCellFormat(writableCellFormatHeader);
 
                             colunaExcel++;
+
+
                         }
 
                     }
 
                 }
+
             }
 
             // PERCORRER TODAS AS RESPOSTAS DOS QUESTIONARIOS DOS PROFESSORES
-            for (int linha = 1, colunaExcel = 0; linha <= questionariosProfessor.size(); linha++) {
-                // plan1.setColumnView(colunaExcel, 25);
-
-                colunaExcel = 0;
+            for (int linha = 1, colunaExcel = 1; linha <= questionariosProfessor.size(); linha++) {
+                colunaExcel = 1;
 
                 Questionario q = questionariosProfessor.get(linha - 1);
 
@@ -274,45 +318,48 @@ public class ResultadosActivity extends AppCompatActivity {
 
                     QuestaoResposta qr = q.getQuestaoRespostas().get(coluna);
 
-                    // Escrevendo as respostas
-                    Label label1;
-                    Label label2;
-                    if (qr.getQuestao().equals(QuestoesProfessores.Q32.getTexto())) {
-                        label1 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(0).getResposta());
-                        plan1.addCell(label1);
+                    Label label0;
+                    if (qr.getQuestao().equals(QuestoesProfessores.Q34.getTexto())) {
+                        label0 = new Label(0, linha, qr.getResposta());
+                        writableSheetPlanProfessor.addCell(label0);
 
-                        WritableCell cell = plan1.getWritableCell(colunaExcel, linha);
-                        cell.setCellFormat(cellFormat2);
-
-                        colunaExcel = colunaExcel + 1;
-
-                        label2 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(1).getResposta());
-                        plan1.addCell(label2);
-
-                        // COLOCOU AQUI POR QUE PULOU UMA COLUNA
-                        // plan1.setColumnView(colunaExcel, 25);
-
-                        WritableCell cell2 = plan1.getWritableCell(colunaExcel, linha);
-                        cell2.setCellFormat(cellFormat2);
-
-                        colunaExcel++;
+                        WritableCell writableCell0 = writableSheetPlanProfessor.getWritableCell(0, linha);
+                        writableCell0.setCellFormat(writableCellFormatBody);
                     } else {
 
-                        if (qr.getQuestao().equals(QuestoesProfessores.QComentario.getTexto())) {
-                            // COLUNA DO EXCEL NAO AVANÇA
+                        // Escrevendo as respostas
+                        Label label1;
+                        Label label2;
+                        if (qr.getQuestao().equals(QuestoesProfessores.Q32.getTexto())) {
+                            label1 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(0).getResposta());
+                            writableSheetPlanProfessor.addCell(label1);
+
+                            WritableCell cell1 = writableSheetPlanProfessor.getWritableCell(colunaExcel, linha);
+                            cell1.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel = colunaExcel + 1;
+
+                            label2 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(1).getResposta());
+                            writableSheetPlanProfessor.addCell(label2);
+
+                            WritableCell cell2 = writableSheetPlanProfessor.getWritableCell(colunaExcel, linha);
+                            cell2.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel++;
                         } else {
 
-                            if (qr.getQuestao().equals(QuestoesProfessores.Q32sub1.getTexto()) ||
-                                    qr.getQuestao().equals(QuestoesProfessores.Q32sub2.getTexto())) {
-                                // COLUNA DO EXCEL NAO AVANÇA
-                            } else {
-                                label1 = new Label(colunaExcel, linha, qr.getResposta());
-                                plan1.addCell(label1);
+                            if (!qr.getQuestao().equals(QuestoesProfessores.QComentario.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesProfessores.Q32sub1.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesProfessores.Q32sub2.getTexto())) {
 
-                                WritableCell cell3 = plan1.getWritableCell(colunaExcel, linha);
-                                cell3.setCellFormat(cellFormat2);
+                                label1 = new Label(colunaExcel, linha, qr.getResposta());
+                                writableSheetPlanProfessor.addCell(label1);
+
+                                WritableCell cell3 = writableSheetPlanProfessor.getWritableCell(colunaExcel, linha);
+                                cell3.setCellFormat(writableCellFormatBody);
 
                                 colunaExcel++;
+
                             }
 
                         }
@@ -323,8 +370,367 @@ public class ResultadosActivity extends AppCompatActivity {
 
             }
 
-            wb.write();
-            wb.close();
+            // -------------------- QUESTIONARIOS DOS ALUNOS ------------------------------
+
+            // Pegando todos os questionários do tipo Aluno
+            RealmQuery<Questionario> questionarioRealmQueryAluno = realm
+                    .where(Questionario.class)
+                    .equalTo("tipo", TipoQuestionario.ALUNOS.getTipo());
+            List<Questionario> questionariosAlunos = questionarioRealmQueryAluno.findAll();
+
+            QuestoesAlunos[] questoesAlunos = QuestoesAlunos.values();
+
+            // PERCORRENDO VETOR COM TODAS AS QUESTOES DOS ALUNOS
+            for (int colunaVetor = 0, colunaExcel = 1; colunaVetor < questoesAlunos.length; colunaVetor++) {
+
+                // Setando a largura das colunas
+                writableSheetPlanAluno.setColumnView(colunaExcel, 25);
+
+                Label label0;
+                if (questoesAlunos[colunaVetor].getTexto().equals(QuestoesAlunos.Q34.getTexto())) {
+                    label0 = new Label(0, 0, questoesAlunos[colunaVetor].getTexto());
+                    writableSheetPlanAluno.addCell(label0);
+
+                    WritableCell writableCell0 = writableSheetPlanAluno.getWritableCell(0, 0);
+                    writableCell0.setCellFormat(writableCellFormatHeader);
+
+                    // Setando a largura das colunas
+                    writableSheetPlanAluno.setColumnView(0, 25);
+                } else {
+
+                    Label label1;
+                    Label label2;
+                    Label label3;
+                    Label label4;
+                    if (questoesAlunos[colunaVetor].getTexto().equals(QuestoesAlunos.Q32.getTexto())) {
+                        label1 = new Label(colunaExcel, 0, questoesAlunos[colunaVetor].getTexto() + "(" + QuestoesAlunos.Q32sub1.getTexto() + ")");
+                        writableSheetPlanAluno.addCell(label1);
+
+                        WritableCell writableCell = writableSheetPlanAluno.getWritableCell(colunaExcel, 0);
+                        writableCell.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel = colunaExcel + 1;
+
+                        label2 = new Label(colunaExcel, 0, questoesAlunos[colunaVetor].getTexto() + "(" + QuestoesAlunos.Q32sub2.getTexto() + ")");
+                        writableSheetPlanAluno.addCell(label2);
+
+                        // COLOCOU AQUI, POR QUE PULOU UM COLUNA
+                        writableSheetPlanAluno.setColumnView(colunaExcel, 25);
+
+                        WritableCell cell2 = writableSheetPlanAluno.getWritableCell(colunaExcel, 0);
+                        cell2.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel = colunaExcel  +1;
+
+                        label3 = new Label(colunaExcel, 0, questoesAlunos[colunaVetor].getTexto() + "(" + QuestoesAlunos.Q32sub3.getTexto() + ")");
+                        writableSheetPlanAluno.addCell(label3);
+
+                        // COLOCOU AQUI, POR QUE PULOU UM COLUNA
+                        writableSheetPlanAluno.setColumnView(colunaExcel, 25);
+
+                        WritableCell cell3 = writableSheetPlanAluno.getWritableCell(colunaExcel, 0);
+                        cell3.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel = colunaExcel  +1;
+
+                        label4 = new Label(colunaExcel, 0, questoesAlunos[colunaVetor].getTexto() + "(" + QuestoesAlunos.Q32sub4.getTexto() + ")");
+                        writableSheetPlanAluno.addCell(label4);
+
+                        // COLOCOU AQUI, POR QUE PULOU UM COLUNA
+                        writableSheetPlanAluno.setColumnView(colunaExcel, 25);
+
+                        WritableCell cell4 = writableSheetPlanAluno.getWritableCell(colunaExcel, 0);
+                        cell4.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel++;
+                    } else {
+
+                        if (!questoesAlunos[colunaVetor].getTexto().equals(QuestoesAlunos.QComentario.getTexto()) &&
+                                !questoesAlunos[colunaVetor].getTexto().equals(QuestoesAlunos.Q32sub1.getTexto()) &&
+                                !questoesAlunos[colunaVetor].getTexto().equals(QuestoesAlunos.Q32sub2.getTexto()) &&
+                                !questoesAlunos[colunaVetor].getTexto().equals(QuestoesAlunos.Q32sub3.getTexto()) &&
+                                !questoesAlunos[colunaVetor].getTexto().equals(QuestoesAlunos.Q32sub4.getTexto())) {
+
+                            label1 = new Label(colunaExcel, 0, questoesAlunos[colunaVetor].getTexto());
+                            writableSheetPlanAluno.addCell(label1);
+
+                            WritableCell cell5 = writableSheetPlanAluno.getWritableCell(colunaExcel, 0);
+                            cell5.setCellFormat(writableCellFormatHeader);
+
+                            colunaExcel++;
+
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            // PERCORRER TODAS AS RESPOSTAS DOS QUESTIONARIOS DOS ALUNOS
+            for (int linha = 1, colunaExcel = 1; linha <= questionariosAlunos.size(); linha++) {
+                colunaExcel = 1;
+
+                Questionario q = questionariosAlunos.get(linha - 1);
+
+                for (int coluna = 0; coluna < q.getQuestaoRespostas().size(); coluna++) {
+
+                    QuestaoResposta qr = q.getQuestaoRespostas().get(coluna);
+
+                    Label label0;
+                    if (qr.getQuestao().equals(QuestoesAlunos.Q34.getTexto())) {
+                        label0 = new Label(0, linha, qr.getResposta());
+                        writableSheetPlanAluno.addCell(label0);
+
+                        WritableCell writableCell0 = writableSheetPlanAluno.getWritableCell(0, linha);
+                        writableCell0.setCellFormat(writableCellFormatBody);
+                    } else {
+
+                        // Escrevendo as respostas
+                        Label label1;
+                        Label label2;
+                        Label label3;
+                        Label label4;
+                        if (qr.getQuestao().equals(QuestoesAlunos.Q32.getTexto())) {
+                            label1 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(0).getResposta());
+                            writableSheetPlanAluno.addCell(label1);
+
+                            WritableCell cell1 = writableSheetPlanAluno.getWritableCell(colunaExcel, linha);
+                            cell1.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel = colunaExcel + 1;
+
+                            label2 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(1).getResposta());
+                            writableSheetPlanAluno.addCell(label2);
+
+                            WritableCell cell2 = writableSheetPlanAluno.getWritableCell(colunaExcel, linha);
+                            cell2.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel = colunaExcel + 1;
+
+                            label3 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(2).getResposta());
+                            writableSheetPlanAluno.addCell(label3);
+
+                            WritableCell cell3 = writableSheetPlanAluno.getWritableCell(colunaExcel, linha);
+                            cell3.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel = colunaExcel + 1;
+
+                            label4 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(3).getResposta());
+                            writableSheetPlanAluno.addCell(label4);
+
+                            WritableCell cell4 = writableSheetPlanAluno.getWritableCell(colunaExcel, linha);
+                            cell4.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel++;
+                        } else {
+
+                            if (!qr.getQuestao().equals(QuestoesAlunos.QComentario.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesAlunos.Q32sub1.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesAlunos.Q32sub2.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesAlunos.Q32sub3.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesAlunos.Q32sub4.getTexto())) {
+
+                                label1 = new Label(colunaExcel, linha, qr.getResposta());
+                                writableSheetPlanAluno.addCell(label1);
+
+                                WritableCell cell5 = writableSheetPlanAluno.getWritableCell(colunaExcel, linha);
+                                cell5.setCellFormat(writableCellFormatBody);
+
+                                colunaExcel++;
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            // -------------------- QUESTIONARIOS DOS PAIS OU RESPONSAVEIS ------------------------------
+
+            // Pegando todos os questionários do tipo Aluno
+            RealmQuery<Questionario> questionarioRealmQueryPaisResponsaveis = realm
+                    .where(Questionario.class)
+                    .equalTo("tipo", TipoQuestionario.RESPONSAVEL.getTipo());
+            List<Questionario> questionariosPaisResponsaveis = questionarioRealmQueryPaisResponsaveis.findAll();
+
+            QuestoesResponsavel[] questoesResponsaveis = QuestoesResponsavel.values();
+
+            // PERCORRENDO VETOR COM TODAS AS QUESTOES DOS RESPONSAVEIS
+            for (int colunaVetor = 0, colunaExcel = 1; colunaVetor < questoesResponsaveis.length; colunaVetor++) {
+
+                // Setando a largura das colunas
+                writableSheetPlanPaisResponsavel.setColumnView(colunaExcel, 25);
+
+                Label label0;
+                if (questoesResponsaveis[colunaVetor].getTexto().equals(QuestoesResponsavel.Q34.getTexto())) {
+                    label0 = new Label(0, 0, questoesResponsaveis[colunaVetor].getTexto());
+                    writableSheetPlanPaisResponsavel.addCell(label0);
+
+                    WritableCell writableCell0 = writableSheetPlanPaisResponsavel.getWritableCell(0, 0);
+                    writableCell0.setCellFormat(writableCellFormatHeader);
+
+                    // Setando a largura das colunas
+                    writableSheetPlanPaisResponsavel.setColumnView(0, 25);
+                } else {
+
+                    Label label1;
+                    Label label2;
+                    Label label3;
+                    Label label4;
+                    if (questoesResponsaveis[colunaVetor].getTexto().equals(QuestoesResponsavel.Q32.getTexto())) {
+                        label1 = new Label(colunaExcel, 0, questoesResponsaveis[colunaVetor].getTexto() + "(" + QuestoesResponsavel.Q32sub1.getTexto() + ")");
+                        writableSheetPlanPaisResponsavel.addCell(label1);
+
+                        WritableCell writableCell = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, 0);
+                        writableCell.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel = colunaExcel + 1;
+
+                        label2 = new Label(colunaExcel, 0, questoesResponsaveis[colunaVetor].getTexto() + "(" + QuestoesResponsavel.Q32sub2.getTexto() + ")");
+                        writableSheetPlanPaisResponsavel.addCell(label2);
+
+                        // COLOCOU AQUI, POR QUE PULOU UM COLUNA
+                        writableSheetPlanPaisResponsavel.setColumnView(colunaExcel, 25);
+
+                        WritableCell cell2 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, 0);
+                        cell2.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel = colunaExcel  +1;
+
+                        label3 = new Label(colunaExcel, 0, questoesResponsaveis[colunaVetor].getTexto() + "(" + QuestoesResponsavel.Q32sub3.getTexto() + ")");
+                        writableSheetPlanPaisResponsavel.addCell(label3);
+
+                        // COLOCOU AQUI, POR QUE PULOU UM COLUNA
+                        writableSheetPlanPaisResponsavel.setColumnView(colunaExcel, 25);
+
+                        WritableCell cell3 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, 0);
+                        cell3.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel = colunaExcel  +1;
+
+                        label4 = new Label(colunaExcel, 0, questoesResponsaveis[colunaVetor].getTexto() + "(" + QuestoesResponsavel.Q32sub4.getTexto() + ")");
+                        writableSheetPlanPaisResponsavel.addCell(label4);
+
+                        // COLOCOU AQUI, POR QUE PULOU UM COLUNA
+                        writableSheetPlanPaisResponsavel.setColumnView(colunaExcel, 25);
+
+                        WritableCell cell4 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, 0);
+                        cell4.setCellFormat(writableCellFormatHeader);
+
+                        colunaExcel++;
+                    } else {
+
+                        if (!questoesResponsaveis[colunaVetor].getTexto().equals(QuestoesResponsavel.QComentario.getTexto()) &&
+                                !questoesResponsaveis[colunaVetor].getTexto().equals(QuestoesResponsavel.Q32sub1.getTexto()) &&
+                                !questoesResponsaveis[colunaVetor].getTexto().equals(QuestoesResponsavel.Q32sub2.getTexto()) &&
+                                !questoesResponsaveis[colunaVetor].getTexto().equals(QuestoesResponsavel.Q32sub3.getTexto()) &&
+                                !questoesResponsaveis[colunaVetor].getTexto().equals(QuestoesResponsavel.Q32sub4.getTexto())) {
+
+                            label1 = new Label(colunaExcel, 0, questoesResponsaveis[colunaVetor].getTexto());
+                            writableSheetPlanPaisResponsavel.addCell(label1);
+
+                            WritableCell cell5 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, 0);
+                            cell5.setCellFormat(writableCellFormatHeader);
+
+                            colunaExcel++;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            // PERCORRER TODAS AS RESPOSTAS DOS QUESTIONARIOS DOS PAIS OU RESPONSAVEIS
+            for (int linha = 1, colunaExcel = 1; linha <= questionariosPaisResponsaveis.size(); linha++) {
+                colunaExcel = 1;
+
+                Questionario q = questionariosPaisResponsaveis.get(linha - 1);
+
+                for (int coluna = 0; coluna < q.getQuestaoRespostas().size(); coluna++) {
+
+                    QuestaoResposta qr = q.getQuestaoRespostas().get(coluna);
+
+                    Label label0;
+                    if (qr.getQuestao().equals(QuestoesResponsavel.Q34.getTexto())) {
+                        label0 = new Label(0, linha, qr.getResposta());
+                        writableSheetPlanPaisResponsavel.addCell(label0);
+
+                        WritableCell writableCell0 = writableSheetPlanPaisResponsavel.getWritableCell(0, linha);
+                        writableCell0.setCellFormat(writableCellFormatBody);
+                    } else {
+
+                        // Escrevendo as respostas
+                        Label label1;
+                        Label label2;
+                        Label label3;
+                        Label label4;
+                        if (qr.getQuestao().equals(QuestoesResponsavel.Q32.getTexto())) {
+                            label1 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(0).getResposta());
+                            writableSheetPlanPaisResponsavel.addCell(label1);
+
+                            WritableCell cell1 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, linha);
+                            cell1.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel = colunaExcel + 1;
+
+                            label2 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(1).getResposta());
+                            writableSheetPlanPaisResponsavel.addCell(label2);
+
+                            WritableCell cell2 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, linha);
+                            cell2.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel = colunaExcel + 1;
+
+                            label3 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(2).getResposta());
+                            writableSheetPlanPaisResponsavel.addCell(label3);
+
+                            WritableCell cell3 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, linha);
+                            cell3.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel = colunaExcel + 1;
+
+                            label4 = new Label(colunaExcel, linha, qr.getSubQuestoes().get(3).getResposta());
+                            writableSheetPlanPaisResponsavel.addCell(label4);
+
+                            WritableCell cell4 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, linha);
+                            cell4.setCellFormat(writableCellFormatBody);
+
+                            colunaExcel++;
+                        } else {
+
+                            if (!qr.getQuestao().equals(QuestoesResponsavel.QComentario.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesResponsavel.Q32sub1.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesResponsavel.Q32sub2.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesResponsavel.Q32sub3.getTexto()) &&
+                                    !qr.getQuestao().equals(QuestoesResponsavel.Q32sub4.getTexto())) {
+
+                                label1 = new Label(colunaExcel, linha, qr.getResposta());
+                                writableSheetPlanPaisResponsavel.addCell(label1);
+
+                                WritableCell cell5 = writableSheetPlanPaisResponsavel.getWritableCell(colunaExcel, linha);
+                                cell5.setCellFormat(writableCellFormatBody);
+
+                                colunaExcel++;
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            writableWorkbook.write();
+            writableWorkbook.close();
 
             realm.commitTransaction();
 
@@ -333,64 +739,6 @@ public class ResultadosActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-
-
-        /*//colunas e linhas e os valores das células
-        Label label = new Label(0, 0,"Primeira célula");
-        Label label1 = new Label(1, 0, "Segunda célula");
-        Label label2 = new Label(2, 0, "Terceira célula");
-        Label label3 = new Label(3, 0, "Quarta célula");
-        Label label4 = new Label(4, 0, "Quinta célula");
-        Label label5 = new Label(5, 0, "Sexta célula");
-        Label label6 = new Label(6, 0, "Sétima célula");*/
-
-
-        /*//Adicionando células no excell
-        try {
-            plan1.addCell(label);
-            plan1.addCell(label1);
-            plan1.addCell(label2);
-            plan1.addCell(label3);
-            plan1.addCell(label4);
-            plan1.addCell(label5);
-            plan1.addCell(label6);
-
-            plan2.addCell(label);
-            plan2.addCell(label1);
-            plan2.addCell(label2);
-            plan2.addCell(label3);
-            plan2.addCell(label4);
-            plan2.addCell(label5);
-            plan2.addCell(label6);
-
-            plan3.addCell(label);
-            plan3.addCell(label1);
-            plan3.addCell(label2);
-            plan3.addCell(label3);
-            plan3.addCell(label4);
-            plan3.addCell(label5);
-            plan3.addCell(label6);
-
-        } catch (RowsExceededException e1) {
-            e1.printStackTrace();
-        } catch (WriteException e1) {
-            e1.printStackTrace();
-        }*/
-
-        /*try {
-            wb.write();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            wb.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (WriteException e) {
-            e.printStackTrace();
-        }*/
     }
 
 }
