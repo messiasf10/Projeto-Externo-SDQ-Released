@@ -9,6 +9,7 @@
     <string name="title_activity_professor">Professores</string>
     <string name="title_activity_aluno">Alunos</string>
     <string name="title_activity_resultados">Resultados</string>
+    <string name="title_activity_sobre_app">Sobre o Aplicativo</string>
     <string name="tipo_do_questionario">SELECIONE O TIPO DO QUESTIONÁRIO</string>
     <string name="selecione_questionario">SELECIONE O QUESTIONÁRIO</string>
 
