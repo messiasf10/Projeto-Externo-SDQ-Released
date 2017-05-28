@@ -169,4 +169,31 @@ public class ResultadosDAO {
         return questionarioSelecionado;
     }
 
+    public static boolean deleteQuestionarioByPositionTipo(String tipo, int position){
+        Realm realm = Realm.getDefaultInstance();
+
+        realm.beginTransaction();
+
+        RealmQuery<Questionario> questionarioRealmQuery = realm.where(Questionario.class).equalTo("tipo", tipo);
+        List<Questionario> questionariosTipoSelecionado = questionarioRealmQuery.findAll();
+
+        Questionario questionarioSelecionado = questionariosTipoSelecionado.get(position);
+
+        if (questionarioSelecionado != null){
+            questionarioSelecionado.deleteFromRealm();
+
+            realm.commitTransaction();
+
+            realm.close();
+
+            return true;
+        }
+
+        realm.commitTransaction();
+
+        realm.close();
+
+        return false;
+    }
+
 }

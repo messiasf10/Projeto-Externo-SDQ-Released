@@ -75,7 +75,7 @@
         android:layout_toEndOf="@+id/pQ1"
         android:layout_toRightOf="@+id/pQ1"
         android:ems="10"
-        android:inputType="text|textCapWords|textCapSentences" />
+        android:inputType="text|textCapCharacters|textCapWords|textCapSentences" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -1359,7 +1359,7 @@
                 android:id="@+id/prQ34"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text|textCapWords|textCapSentences" />
+                android:inputType="text|textCapCharacters|textCapWords|textCapSentences" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

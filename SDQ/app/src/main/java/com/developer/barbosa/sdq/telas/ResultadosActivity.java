@@ -1,6 +1,8 @@
 package com.developer.barbosa.sdq.telas;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -9,10 +11,14 @@ import android.os.AsyncTask;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,11 +60,15 @@ public class ResultadosActivity extends AppCompatActivity {
     private int positionQuestionarioSelecionado = 0;
     private TextView txtRespNumFalso, txtRespNumMMV, txtRespNumVerdadeiro;
     private Button btnVisualizarQuestionario;
-
     private Button btnExportarExcell;
 
     private ProgressDialog dialog;
+    private AlertDialog alerta;
+    private AlertDialog alertaNomeEscola;
 
+    private String nomeEscola = "";
+    private static String NOME_ARQUIVO = "PLANILHA_SDQ";
+    private static String EXTENSAO_ARQUIVO = ".xls";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,23 +92,76 @@ public class ResultadosActivity extends AppCompatActivity {
 
         spinnerTipoQuestResults.setAdapter(adapterSpinnerTipo);
 
-        spinnerTipoQuestResults.setOnItemSelectedListener(selectedListener);
-        spinnerSelecQuestResults.setOnItemSelectedListener(selectedListener1);
+        spinnerTipoQuestResults.setOnItemSelectedListener(selectedListenerSpinnerTipoQuestionario);
+        spinnerSelecQuestResults.setOnItemSelectedListener(selectedListenerSpinnerPositionQuestionario);
 
 
     }
 
-    AdapterView.OnItemSelectedListener selectedListener = new AdapterView.OnItemSelectedListener() {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_resultados, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_deletar_questionario) {
+
+            if (spinnerSelecQuestResults.getSelectedItemId() != AdapterView.INVALID_ROW_ID) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(ResultadosActivity.this);
+                builder.setTitle("Deletar Questionário Selecionado");
+                builder.setMessage("Você tem certeza de que deseja deletar o questionário selecionado?");
+                builder.setIcon(R.drawable.ic_action_alerta);
+                builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        boolean deletado = ResultadosDAO.deleteQuestionarioByPositionTipo(tipoQuestionarioSelecionado, positionQuestionarioSelecionado);
+
+                        if(deletado) {
+                            Toast.makeText(ResultadosActivity.this, "Questionário deletado com sucesso!", Toast.LENGTH_SHORT).show();
+
+                            ArrayAdapter<String> adapterSpinnerQuestSelec = new ArrayAdapter<>(ResultadosActivity.this,
+                                    android.R.layout.simple_spinner_item,
+                                    ResultadosDAO.getStringsViewQuestionariosByTipo(tipoQuestionarioSelecionado));
+                            adapterSpinnerQuestSelec.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+                            spinnerSelecQuestResults.setAdapter(adapterSpinnerQuestSelec);
+                        }
+                        else
+                            Toast.makeText(ResultadosActivity.this, "Falha ao tentar deletar o questionário!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                builder.setNegativeButton("Não", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        Toast.makeText(ResultadosActivity.this, "Operação cancelada", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                alerta = builder.create();
+                alerta.show();
+
+            } else
+                Toast.makeText(this, "Selecione um questionário!", Toast.LENGTH_SHORT).show();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    AdapterView.OnItemSelectedListener selectedListenerSpinnerTipoQuestionario = new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             tipoQuestionarioSelecionado = spinnerTipoQuestResults.getSelectedItem().toString();
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(ResultadosActivity.this,
+            ArrayAdapter<String> adapterSpinnerQuestSelec = new ArrayAdapter<>(ResultadosActivity.this,
                     android.R.layout.simple_spinner_item,
                     ResultadosDAO.getStringsViewQuestionariosByTipo(tipoQuestionarioSelecionado));
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            adapterSpinnerQuestSelec.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-            spinnerSelecQuestResults.setAdapter(adapter);
+            spinnerSelecQuestResults.setAdapter(adapterSpinnerQuestSelec);
         }
 
         @Override
@@ -107,7 +170,7 @@ public class ResultadosActivity extends AppCompatActivity {
         }
     };
 
-    AdapterView.OnItemSelectedListener selectedListener1 = new AdapterView.OnItemSelectedListener() {
+    AdapterView.OnItemSelectedListener selectedListenerSpinnerPositionQuestionario = new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             positionQuestionarioSelecionado = i;
@@ -147,13 +210,12 @@ public class ResultadosActivity extends AppCompatActivity {
             startActivity(intent);
 
         } else {
-            Toast.makeText(this, "Selecione um questionário!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Selecione um questionário!", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void exportarExcel(View view) {
-        ExportarExcelAsync exportarExcelAsync = new ExportarExcelAsync();
-        exportarExcelAsync.execute();
+        this.criarAlertDialogConfirmarNomeEscolaInstituicao();
     }
 
     private class ExportarExcelAsync extends AsyncTask<Void, Void, Void> {
@@ -180,7 +242,11 @@ public class ResultadosActivity extends AppCompatActivity {
     private void gerarDadosNaPlanilhaDoExcel(){
         try {
 
-            File file = new File(Environment.getExternalStorageDirectory(), "PLANILHA_QUESTIONARIOS_SDQ.xls");
+            File file;
+            if (nomeEscola.equals(""))
+                file = new File(Environment.getExternalStorageDirectory(), NOME_ARQUIVO + EXTENSAO_ARQUIVO);
+            else
+                file = new File(Environment.getExternalStorageDirectory(), NOME_ARQUIVO + "_" + nomeEscola + EXTENSAO_ARQUIVO);
 
             WritableWorkbook writableWorkbook = null;
 
@@ -739,6 +805,48 @@ public class ResultadosActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void criarAlertDialogConfirmarNomeEscolaInstituicao() {
+        LayoutInflater li = getLayoutInflater();
+
+        View view = li.inflate(R.layout.alerta_dialog, null);
+
+        final EditText edtNomeEscola = (EditText) view.findViewById(R.id.edtNomeEscola);
+        Button btnConfirmar = (Button) view.findViewById(R.id.btnConfirmar);
+        Button btnIgnorar = (Button) view.findViewById(R.id.btnIgnorar);
+
+        btnConfirmar.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View arg0) {
+
+                nomeEscola = edtNomeEscola.getText().toString();
+
+                if(nomeEscola.equals("")){
+                    Toast.makeText(ResultadosActivity.this, "Preencha todos os campos!", Toast.LENGTH_SHORT).show();
+                } else {
+                    ExportarExcelAsync exportarExcelAsync = new ExportarExcelAsync();
+                    exportarExcelAsync.execute();
+                    alertaNomeEscola.dismiss();
+                }
+
+            }
+        });
+
+        btnIgnorar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nomeEscola = "";
+                ExportarExcelAsync exportarExcelAsync = new ExportarExcelAsync();
+                exportarExcelAsync.execute();
+                alertaNomeEscola.dismiss();
+            }
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Nome da Escola/Instituição");
+        builder.setView(view);
+        alertaNomeEscola = builder.create();
+        alertaNomeEscola.show();
     }
 
 }

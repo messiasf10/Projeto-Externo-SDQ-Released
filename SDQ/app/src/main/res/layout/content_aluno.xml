@@ -33,7 +33,7 @@
         android:layout_toEndOf="@+id/aQ1"
         android:layout_toRightOf="@+id/aQ1"
         android:ems="10"
-        android:inputType="textCapCharacters|textCapSentences" />
+        android:inputType="text|textCapCharacters|textCapWords|textCapSentences" />
 
     <TextView
         android:text="Data de Nascimento"
@@ -1479,7 +1479,7 @@
                 android:id="@+id/arQ34"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapCharacters|textCapSentences" />
+                android:inputType="text|textCapCharacters|textCapWords|textCapSentences" />
 
             <TextView
                 android:id="@+id/aQ35"
